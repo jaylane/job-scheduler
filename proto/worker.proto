@@ -17,9 +17,9 @@ service Worker {
 
 message StartJobRequest {
     // The name or path of the command to run.
-    string command = 2;
+    string command = 1;
     // The arguments to pass to the command.
-    repeated string args = 3;
+    repeated string args = 2;
 }
 
 message StartJobReponse {
@@ -56,7 +56,7 @@ message GetJobStatusResponse {
     // The exit code of the process
     int32 exit_code = 2;
     // Status enum of the job.
-    optional Status status = 3;
+    Status status = 3;
 }
 
 message StreamJobOutputRequest {
