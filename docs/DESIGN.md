@@ -186,7 +186,7 @@ TLS 1.3 for transport of communication between client and server
 
 ## mTLS
 
-Authentication and Authorization will be done via mTLS. I will generate the following certificates and store them in the repository for the sake of this project. In a real world scenario these certificates could be managed by secrets or using something like Vault.
+Authentication and Authorization will be done via mTLS. I will generate the following certificates and store them in the repository for this project. 
 
 * Client CA private key and signed cert
 * Server CA private key and signed cert
@@ -196,5 +196,8 @@ Authentication and Authorization will be done via mTLS. I will generate the foll
 * Client Signed Cert via CSR & CA noted above
 
 There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as configured extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role.
+
+## Tradeoff 
+In a real world scenario these certificates could be managed by secrets or using something like Vault.
 
 
