@@ -48,6 +48,9 @@ The worker struct will have 4 methods:.
       * jobID is the ID of the job to stream the output of
       * output is 
 
+### Tradeoff
+For the interest of time each worker will store a logfile locally on the server. The log files will persist through the life of the server. This would not be ideal in a production instance. In a real world implemention I would store logging data in an s3 bucket or via a vendor logging solution such as Datadog.
+
 ### Job package
 
 The job package will define the structs containing the information about the specific processes spawned by the worker.
@@ -96,7 +99,7 @@ type Job struct {
 ```
 
 ## API
-The API will be a gRPC server that will implement the Worker service.
+The API will be a gRPC server that will be responsible for authentication, authorization and interacting with the library to execute Worker methods:
 
 ```protobuf
 syntax = "proto3";
@@ -166,11 +169,32 @@ message StreamJobOutputResponse {
 ```
 
 ### CLI
-The CLI will use the API package
+The CLI will utilize [cobra](https://github.com/spf13/cobra) for ease of development. The CLI will have a gRPC client that will be able to interact with the API to start/stop/get status/stream output of jobs in their local shell.
 
 
+example: 
+```sh
+jsched-cli start "cat" "go.mod"
+
+JobID: aeba5ba9-e95a-455b-b97b-31a2d98c45ab started
+```
 
 
+## Transport
 
+TLS 1.3 for transport of communication between client and server
+
+## mTLS
+
+Authentication and Authorization will be done via mTLS. I will generate the following certificates and store them in the repository for the sake of this project. In a real world scenario these certificates could be managed by secrets or using something like Vault.
+
+* Client CA private key and signed cert
+* Server CA private key and signed cert
+* Client private key and CSR
+* Server private key and CSR
+* Server Signed Cert via CSR & CA noted above
+* Client Signed Cert via CSR & CA noted above
+
+There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as configured extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role.
 
 
