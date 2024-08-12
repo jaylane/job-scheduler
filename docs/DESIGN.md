@@ -41,7 +41,6 @@ The worker struct will have 4 methods:
     - jobID is a string version of a uuidv4 of the created job
 - StopJob (jobID string) (err error)
     - jobID is the ID of the job to stop
-    - status is the status of the job after stopping expect(Terminated/Stopped)
 - GetJobStatus (jobID string) (status job.Status, err error)
     - jobID is the ID of the job to get status on
     - status is the status of the job 
