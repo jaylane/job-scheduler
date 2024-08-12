@@ -49,8 +49,10 @@ The worker struct will have 4 methods:
     - jobID is the ID of the job to stream the output of
     - chan for streaming output from the log
 
+    The worker will write the output of the job's process (stderr/stdout) on the server via a log file associated to the job by its ID (ex: 975b2d14-e567-4e22-92e4-eebefe6d8ed7.log). For streaming the logfile to the client the worker's logger will incorporate a filewatcher that will listen for file events on the specific job's logfile via inotifywait. As the logfile remains open and continues to be modified the logger will stream the incoming content to the client via a channel.
+
 ### Tradeoff
-For the interest of time each worker will store a logfile locally on the server. The log files will persist through the life of the server. This would not be ideal in a production instance. In a real world implemention I would store logging data in an s3 bucket or via a vendor logging solution such as Datadog.
+For the interest of time each worker will store the logfile locally on the server. The log files will persist through the life of the server. This would not be ideal in a production instance. In a real world implemention I would store logging data in an s3 bucket or via a vendor logging solution such as Datadog.
 
 ### Job package
 
