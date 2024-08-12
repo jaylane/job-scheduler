@@ -39,7 +39,7 @@ The worker struct will have 4 methods:
     - command is a program executable available via PATH or an absolute path to the program 
     - args are arguments to supply to the command
     - jobID is a string version of a uuidv4 of the created job
-- StopJob (jobID string) (status job.Status, err error)
+- StopJob (jobID string) (err error)
     - jobID is the ID of the job to stop
     - status is the status of the job after stopping expect(Terminated/Stopped)
 - GetJobStatus (jobID string) (status job.Status, err error)

@@ -35,8 +35,6 @@ message StopJobRequest {
 }
 
 message StopJobResponse {
-    // The status of the job that was stopped.
-    string status = 1;
 }
 
 message GetJobStatusRequest {
