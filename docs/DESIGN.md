@@ -29,25 +29,26 @@ The worker will be the top level struct in the library. Workers will be able to 
 
 Workers will have 2 properties
 
-a logger
+- a logger
+- a map of jobs (a map of jobID (uuid) to a pointer to the specific job.)
 
-and a map of jobs (a map of jobID (uuid) to a pointer to the specific job.)
+The worker struct will have 4 methods:
 
-The worker struct will have 4 methods:.
-    * StartJob - (command string, args []string) (jobID string, err error) - Starts a job 
-      * command is a program executable available via PATH or an absolute path to the program 
-      * args are arguments to supply to the command
-      * jobID is a string version of a uuidv4 of the created job
-    * StopJob (jobID string) (status job.Status, err error)
-      * jobID is the ID of the job to stop
-      * status is the status of the job after stopping expect(Terminated/Stopped)
-    * GetJobStatus (jobID string) (status job.Status, err error)
-      * jobID is the ID of the job to get status on
-      * status is the status of the job 
-    * StreamJobOutput(ctx context.Context, jobID string) (outchan chan string, err error)
-      * ctx context
-      * jobID is the ID of the job to stream the output of
-      * chan for streaming output from the log
+- StartJob - (command string, args []string) (jobID string, err error) 
+    - Starts a job 
+    - command is a program executable available via PATH or an absolute path to the program 
+    - args are arguments to supply to the command
+    - jobID is a string version of a uuidv4 of the created job
+- StopJob (jobID string) (status job.Status, err error)
+    - jobID is the ID of the job to stop
+    - status is the status of the job after stopping expect(Terminated/Stopped)
+- GetJobStatus (jobID string) (status job.Status, err error)
+    - jobID is the ID of the job to get status on
+    - status is the status of the job 
+- StreamJobOutput(ctx context.Context, jobID string) (outchan chan string, err error)
+    - ctx context
+    - jobID is the ID of the job to stream the output of
+    - chan for streaming output from the log
 
 ### Tradeoff
 For the interest of time each worker will store a logfile locally on the server. The log files will persist through the life of the server. This would not be ideal in a production instance. In a real world implemention I would store logging data in an s3 bucket or via a vendor logging solution such as Datadog.
@@ -101,15 +102,18 @@ type Job struct {
 
 cgroups implementation will be added via a cgroup package that will be used to create the necessary directory structure in the server's filesystem. cgroups will be separated by jobID upon starting of the job and any child procs will be added by piping the pids the cgroups procs config. All resource limits will be hardcoded for this project.
 
-child_procs ```bash echo 2428 > /sys/fs/cgroup/{jobID}/cgroup.procs```
-memory ```bash /sys/fs/cgroup/{jobID}/memory.limit_in_bytes```
-cpu 
+child_procs:
+```bash echo 2428 > /sys/fs/cgroup/{jobID}/cgroup.procs```
+memory:
+```bash /sys/fs/cgroup/{jobID}/memory.limit_in_bytes```
+cpu:  
 ```bash 
     /sys/fs/cgroup/{jobID}/cpu.shares
     /sys/fs/cgroup/{jobID}/cpu.period
     /sys/fs/cgroup/{jobID}/cpu.quota
 ```
-disk_io```bash /sys/fs/cgroup/{jobID}/blkio.weight```
+disk_io:
+```bash /sys/fs/cgroup/{jobID}/blkio.weight```
 
 In a production environment the resource limits could be configurable during instanting the jobs but for this project I will hardcode limits to reduce scope.
 
@@ -180,8 +184,6 @@ message StreamJobOutputResponse {
     // The output of the job.
     string output = 1;
 }
-
-
 ```
 
 ### CLI
