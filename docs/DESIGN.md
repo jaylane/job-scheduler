@@ -90,11 +90,9 @@ func (s Status) EnumIndex() int {
 type Job struct {
     ID string 
     Cmd *exec.Cmd 
-    Output []byte
     Process *Process
     StartTime time.Time
     EndTime time.Time
-    mu sync.Mutex
 }
 ```
 
