@@ -17,7 +17,7 @@ This project will consist of 3 main parts per the level 4 requirements spec laid
 
 ## Library
 
-The library will consist of 2 Go packages that will be used by the API and the CLI to run the processes.
+The library will consist of 3 Go packages that will be used by the API and the CLI to run the processes.
 
 ### Worker package
 
@@ -97,6 +97,23 @@ type Job struct {
 }
 ```
 
+### cgroups package
+
+cgroups implementation will be added via a cgroup package that will be used to create the necessary directory structure in the server's filesystem. cgroups will be separated by jobID upon starting of the job and any child procs will be added by piping the pids the cgroups procs config. All resource limits will be hardcoded for this project.
+
+child_procs ```bash echo 2428 > /sys/fs/cgroup/{jobID}/cgroup.procs```
+memory ```bash /sys/fs/cgroup/{jobID}/memory.limit_in_bytes```
+cpu 
+```bash 
+    /sys/fs/cgroup/{jobID}/cpu.shares
+    /sys/fs/cgroup/{jobID}/cpu.period
+    /sys/fs/cgroup/{jobID}/cpu.quota
+```
+disk_io```bash /sys/fs/cgroup/{jobID}/blkio.weight```
+
+In a production environment the resource limits could be configurable during instanting the jobs but for this project I will hardcode limits to reduce scope.
+
+
 ## API
 The API will be a gRPC server that will be responsible for authentication, authorization and interacting with the library to execute Worker methods:
 
@@ -166,22 +183,6 @@ message StreamJobOutputResponse {
 
 
 ```
-
-### cgroups
-
-cgroups implementation will be added via a cgroup package that will be used to create the necessary directory structure in the server's filesystem. cgroups will be separated by jobID upon starting of the job and any child procs will be added by piping the pids the cgroups procs config. All resource limits will be hardcoded for this project.
-
-child_procs ```bash echo 2428 > /sys/fs/cgroup/{jobID}/cgroup.procs```
-memory ```bash /sys/fs/cgroup/{jobID}/memory.limit_in_bytes```
-cpu 
-```bash 
-    /sys/fs/cgroup/{jobID}/cpu.shares
-    /sys/fs/cgroup/{jobID}/cpu.period
-    /sys/fs/cgroup/{jobID}/cpu.quota
-```
-disk_io```bash /sys/fs/cgroup/{jobID}/blkio.weight```
-
-In a production environment the resource limits could be configurable during instanting the jobs but for this project I will hardcode limits to reduce scope.
 
 ### CLI
 The CLI will utilize [cobra](https://github.com/spf13/cobra) for ease of development. The CLI will have a gRPC client that will be able to interact with the API to start/stop/get status/stream output of jobs in their local shell.
