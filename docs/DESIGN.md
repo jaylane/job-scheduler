@@ -72,6 +72,8 @@ const (
 	UNKNOWN Status = iota
 	RUNNING
 	STOPPED
+    TERMINATED
+    COMPLETED
 )
 
 func (s Status) String() string {
@@ -80,6 +82,10 @@ func (s Status) String() string {
 		return "running"
 	case STOPPED:
 		return "stopped"
+    case TERMINATED
+        return "terminated"
+    case COMPLETED
+        return "completed"
 	default:
 		return "unknown"
 	}
