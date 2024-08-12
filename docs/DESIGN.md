@@ -180,10 +180,25 @@ public key: rsa
 X.509 standard package
 
 
-There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as X.509 v3 extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role.
+There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as X.509 v3 extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role. Following the example from the spinnaker [docs](https://spinnaker.io/docs/setup/other_config/security/authentication/x509/#creating-an-x509-client-certificate-with-user-role-information). The roles must be informed when the CA signs the CSR so the extension attribute roleOid 1.2.840.10070.8.1 = ASN1:UTF8String must be requested in the CSR when the client cert is created. The data following UTF8String: is encoded inside of the x509 cert under the given OID.
 
 admin role - authorized to interact with all rpcs
+
+client-admin-ext.conf
+```conf
+subjectAltName=DNS:localhost
+  [ v3_req ]
+  1.2.840.10070.8.1 = ASN1:UTF8String:admin
+```
+
 user role - authorized to interact with all but StopJob rpc
+
+client-user-ext.conf
+```conf
+subjectAltName=DNS:localhost
+  [ v3_req ]
+  1.2.840.10070.8.1 = ASN1:UTF8String:user
+```
 
 ## Tradeoff 
 In a real world scenario these certificates could be managed by secrets or using something like Vault.
