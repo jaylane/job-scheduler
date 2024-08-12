@@ -26,7 +26,7 @@ message StartJobResponse {
     // The id of the job that was started.
     string id = 1;
     // The status of the job that was started.
-    string status = 2;
+    Status status = 2;
 }
 
 message StopJobRequest {
@@ -46,6 +46,8 @@ enum Status {
     UNKNOWN = 0;
     RUNNING = 1;
     STOPPED = 2;
+    TERMINATED = 3;
+    COMPLETED = 4;
 }
 
 message GetJobStatusResponse {  
