@@ -22,7 +22,7 @@ message StartJobRequest {
     repeated string args = 2;
 }
 
-message StartJobReponse {
+message StartJobResponse {
     // The id of the job that was started.
     string id = 1;
     // The status of the job that was started.
