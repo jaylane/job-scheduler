@@ -124,7 +124,11 @@ In a production environment the resource limits could be configurable during ins
 
 
 ## API
-The API will be a gRPC server that will be responsible for authentication, authorization and interacting with the library to execute Worker methods. The proto configuration can be viewed [here](../proto/worker.proto)
+The API will be a gRPC server that will be responsible for authentication, authorization and interacting with the library to execute Worker methods:
+
+```protobuf
+# ../proto/worker.proto
+```
 
 
 ### CLI
