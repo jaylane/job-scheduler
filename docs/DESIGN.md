@@ -180,8 +180,8 @@ X.509 standard package
 
 There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as X.509 v3 extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role.
 
-admin role - allowed to start and stop jobs
-user role - allowed to stream output and get job status
+admin role - authorized to interact with all rpcs
+user role - authorized to interact with all but StopJob rpc
 
 ## Tradeoff 
 In a real world scenario these certificates could be managed by secrets or using something like Vault.
