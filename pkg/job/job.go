@@ -77,5 +77,5 @@ var nonRunningStatuses = []Status{TERMINATED, STOPPED, UNKNOWN}
 
 // IsRunning returns true if the job is running
 func (j *Job) IsRunning() bool {
-	return j.Process.ExitCode == 0 && !slices.Contains(nonRunningStatuses, RUNNING)
+	return j.Process.ExitCode == 0 && !slices.Contains(nonRunningStatuses, j.Process.Status)
 }

@@ -9,6 +9,7 @@ import (
 
 	logger "log"
 
+	"github.com/jaylane/job-scheduler/pkg/cgroup"
 	c "github.com/jaylane/job-scheduler/pkg/worker/config"
 	log "github.com/jaylane/job-scheduler/pkg/worker/log"
 
@@ -46,22 +47,30 @@ func NewWorker(conf c.Config) Worker {
 
 func (w *worker) StartJob(command j.Command) (jobID string, err error) {
 	logger.Printf("Starting job with command %s and args %v", command.Name, command.Args)
+	id := uuid.NewString()
+	logfile, err := w.logger.Create(id)
+
+	defer cgroup.CreateCgroup(id)
+
 	cmd := exec.Command(command.Name, command.Args...)
+	cmd.Stdout = logfile
+	cmd.Stderr = logfile
+	if err := cmd.Start(); err != nil {
+		w.logger.Remove(id)
+		return id, err
+	}
 	job := *&j.Job{
-		ID:     uuid.NewString(),
+		ID:     id,
 		Cmd:    cmd,
 		Output: make([]byte, 0),
-		Process: &j.Process{
-			PID: cmd.ProcessState.Pid(),
-		},
 	}
-	jobID = job.ID
+
 	w.m.Lock()
-	w.jobs[jobID] = &job
+	w.jobs[id] = &job
 	w.m.Unlock()
 
 	go func() {
-		if err := job.Cmd.Run(); err != nil {
+		if err := job.Cmd.Wait(); err != nil {
 			logger.Printf("Error running job: %s", err)
 		}
 
@@ -71,7 +80,7 @@ func (w *worker) StartJob(command j.Command) (jobID string, err error) {
 		}
 		w.m.Lock()
 		job.Process = &process
-		w.m.Unlock()
+		defer w.m.Unlock()
 	}()
 
 	return jobID, nil
