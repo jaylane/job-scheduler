@@ -126,9 +126,7 @@ In a production environment the resource limits could be configurable during ins
 ## API
 The API will be a gRPC server that will be responsible for authentication, authorization and interacting with the library to execute Worker methods:
 
-```protobuf
-# ../proto/worker.proto
-```
+https://github.com/jaylane/job-scheduler/blob/acf2ea9742674d9d15b7dda6df87cc97975cb756/proto/worker.proto#L1-L68
 
 
 ### CLI
