@@ -34,19 +34,20 @@ a mutex
 and a map of jobs (a map of jobID (uuid) to a pointer to the specific job.)
 
 The worker struct will have 4 methods:.
-    * StartJob - (command string, args []string) (jobID string) - Starts a job 
+    * StartJob - (command string, args []string) (jobID string, err error) - Starts a job 
       * command is a program executable available via PATH or an absolute path to the program 
       * args are arguments to supply to the command
       * jobID is a string version of a uuidv4 of the created job
-    * StopJob (jobID string) (status job.Status)
+    * StopJob (jobID string) (status job.Status, err error)
       * jobID is the ID of the job to stop
       * status is the status of the job after stopping expect(Terminated/Stopped)
-    * GetJobStatus (jobID string) (status job.Status)
+    * GetJobStatus (jobID string) (status job.Status, err error)
       * jobID is the ID of the job to get status on
       * status is the status of the job 
-    * StreamJobOutput(jobID string) (output string)
+    * StreamJobOutput(ctx context.Context, jobID string) (outchan chan string, err error)
+      * ctx context
       * jobID is the ID of the job to stream the output of
-      * output is 
+      * chan for streaming output from the log
 
 ### Tradeoff
 For the interest of time each worker will store a logfile locally on the server. The log files will persist through the life of the server. This would not be ideal in a production instance. In a real world implemention I would store logging data in an s3 bucket or via a vendor logging solution such as Datadog.
@@ -114,7 +115,7 @@ service Worker {
     /* StreamJobOutput streams the output of a job.
        Note: If the job is still active when StreamOutputRequest 
        is sent the cli will tail the output. */ 
-    rpc StreamJobOutput(StreamJobOutputRequest) returns (StreamJobOutputResponse);
+    rpc StreamJobOutput(StreamJobOutputRequest) returns (stream StreamJobOutputResponse);
 }
 
 message StartJobRequest {
