@@ -119,72 +119,8 @@ In a production environment the resource limits could be configurable during ins
 
 
 ## API
-The API will be a gRPC server that will be responsible for authentication, authorization and interacting with the library to execute Worker methods:
+The API will be a gRPC server that will be responsible for authentication, authorization and interacting with the library to execute Worker methods. The proto configuration can be viewed [here](../proto/worker.proto)
 
-```protobuf
-syntax = "proto3";
-
-option go_package = "github.com/jaylane/job-scheduler/pkg/worker";
-
-service Worker {
-    // StartJob starts a job.
-    rpc StartJob(StartJobRequest) returns (StartJobReponse);
-    // StopJob stops a job.
-    rpc StopJob(StopJobRequest) returns (StopJobResponse);
-    // GetJobStatus gets the status of a job.
-    rpc GetJobStatus(GetJobStatusRequest) returns (GetJobStatusResponse);
-    /* StreamJobOutput streams the output of a job.
-       Note: If the job is still active when StreamOutputRequest 
-       is sent the cli will tail the output. */ 
-    rpc StreamJobOutput(StreamJobOutputRequest) returns (stream StreamJobOutputResponse);
-}
-
-message StartJobRequest {
-    // The name or path of the command to run.
-    string command = 1;
-    // The arguments to pass to the command.
-    repeated string args = 2;
-}
-
-message StartJobReponse {
-    // The id of the job that was started.
-    string id = 1;
-    // The status of the job that was started.
-    string status = 2;
-}
-
-message StopJobRequest {
-    // The id of the job to stop.
-    string id = 1;
-}
-
-message StopJobResponse {
-    // status is a readable string representation of the process' exit_code
-    string status = 1;
-}
-
-message GetJobStatusRequest {
-    // The id of the job to get the status of.
-    string id = 1;
-}
-
-message GetJobStatusResponse {  
-    // The process id of the job
-    int32 pid = 1;
-    // status is a readable string representation of the process' exit_code
-    string status = 2;
-}
-
-message StreamJobOutputRequest {
-    // The id of the job to stream the output of.
-    string id = 1;
-}
-
-message StreamJobOutputResponse {
-    // The output of the job.
-    string output = 1;
-}
-```
 
 ### CLI
 The CLI will utilize [cobra](https://github.com/spf13/cobra) for ease of development. The CLI will have a gRPC client that will be able to interact with the API to start/stop/get status/stream output of jobs in their local shell.
