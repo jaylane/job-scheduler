@@ -29,7 +29,7 @@ The worker will be the top level struct in the library. Workers will be able to 
 
 Workers will have 2 properties
 
-a mutex
+a logger
 
 and a map of jobs (a map of jobID (uuid) to a pointer to the specific job.)
 
