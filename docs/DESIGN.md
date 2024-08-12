@@ -168,15 +168,48 @@ message StreamJobOutputResponse {
 
 ```
 
+### cgroups
+
+cgroups implementation will be added via a cgroup package that will be used to create the necessary directory structure in the server's filesystem. cgroups will be separated by jobID upon starting of the job and any child procs will be added by piping the pids the cgroups procs config. All resource limits will be hardcoded for this project.
+
+child_procs ```bash echo 2428 > /sys/fs/cgroup/{jobID}/cgroup.procs```
+memory ```bash /sys/fs/cgroup/{jobID}/memory.limit_in_bytes```
+cpu 
+```bash 
+    /sys/fs/cgroup/{jobID}/cpu.shares
+    /sys/fs/cgroup/{jobID}/cpu.period
+    /sys/fs/cgroup/{jobID}/cpu.quota
+```
+disk_io```bash /sys/fs/cgroup/{jobID}/blkio.weight```
+
+In a production environment the resource limits could be configurable during instanting the jobs but for this project I will hardcode limits to reduce scope.
+
 ### CLI
 The CLI will utilize [cobra](https://github.com/spf13/cobra) for ease of development. The CLI will have a gRPC client that will be able to interact with the API to start/stop/get status/stream output of jobs in their local shell.
 
 
 example: 
 ```sh
-jsched-cli start "cat" "go.mod"
+jsched-cli start "/bin/ls" "-l"
 
 JobID: aeba5ba9-e95a-455b-b97b-31a2d98c45ab started
+
+jsched-cli stop "aeba5ba9-e95a-455b-b97b-31a2d98c45ab"
+
+JobID: aeba5ba9-e95a-455b-b97b-31a2d98c45ab stopped
+
+jsched-cli status aeba5ba9-e95a-455b-b97b-31a2d98c45ab
+
+JobID: aeba5ba9-e95a-455b-b97b-31a2d98c45ab running/stopped/terminated
+
+jsched-cli stream aeba5ba9-e95a-455b-b97b-31a2d98c45ab
+
+2024/08/11 22:17:25 Running command /bin/ls -l
+2024/08/11 22:17:25 total 16
+2024/08/11 22:17:25 -rw-r--r--@ 1 jasonlane  staff  1065 Aug  7 14:04 LICENSE
+2024/08/11 22:17:25 drwxr-xr-x  3 jasonlane  staff    96 Aug  7 14:04 docs
+2024/08/11 22:17:25 -rw-r--r--  1 jasonlane  staff   573 Aug 11 22:17 main.go
+2024/08/11 22:17:25 drwxr-xr-x  3 jasonlane  staff    96 Aug  7 14:06 proto
 ```
 
 
@@ -195,9 +228,18 @@ Authentication and Authorization will be done via mTLS. I will generate the foll
 * Server Signed Cert via CSR & CA noted above
 * Client Signed Cert via CSR & CA noted above
 
+signature: sha256WithRSAEncryption
+public key: rsa
+X.509 standard package
+
+
 There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as configured extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role.
+
+admin role - allowed to start and stop jobs
+user role - allowed to stream output and get job status
 
 ## Tradeoff 
 In a real world scenario these certificates could be managed by secrets or using something like Vault.
 
-
+## simple authorization scheme
+will utilize ASN1:UTF8String denoting authorization role on the certificate extension
