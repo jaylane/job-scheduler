@@ -109,18 +109,30 @@ type Job struct {
 
 cgroups implementation will be added via a cgroup package that will be used to create the necessary directory structure in the server's filesystem. cgroups will be separated by jobID upon starting of the job and any child procs will be added by piping the pids the cgroups procs config. All resource limits will be hardcoded for this project.
 
-- child_procs:
-    ```bash echo 2428 > /sys/fs/cgroup/{jobID}/cgroup.procs```
+```golang
+const (
+    CPUPeriodUs = 100000
+    CPULimit = 2.0
+    MemoryLimit = "1G"
+    BlkioMajorMinor = "8:16"
+    BlkioWriteLimit = BlkioMajorMinor + " 20971520"
+    BlkioReadLimit = BlkioMajorMinor + " 41943040"
+)
+```
 - memory:
-    ```bash /sys/fs/cgroup/{jobID}/memory.limit_in_bytes```
+    ```bash
+        echo 1G > /sys/fs/cgroup/memory/jobs/{jobID}/memory.limit_in_bytes
+    ```
 - cpu:  
     ```bash 
-        /sys/fs/cgroup/{jobID}/cpu.shares
-        /sys/fs/cgroup/{jobID}/cpu.period
-        /sys/fs/cgroup/{jobID}/cpu.quota
+       echo 100000 > /sys/fs/cgroup/cpu/jobs/{jobID}/cpu.cfs_period_us
+       echo 200000 > /sys/fs/cgroup/cpu/jobs/{jobID}/cpu.cfs_quota_us
     ```
 - disk_io:
-    ```bash /sys/fs/cgroup/{jobID}/blkio.weight```
+    ```bash 
+        echo 8:16 41943040 > /sys/fs/cgroup/blkio/jobs/{jobID}/blkio.throttle.read_bps_device
+        echo 8:16 20971520 > /sys/fs/cgroup/blkio/jobs/{jobID}/blkio.throttle.write_bps_device
+    ```
 
 #### Trade-off 
 In a production environment the resource limits could be configurable during instanting the jobs but for this project I will hardcode limits to reduce scope.
