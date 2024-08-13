@@ -172,6 +172,18 @@ TLS 1.3 has been chosen for secure transport of communication between client and
 
 - Simplified Configuration: With fewer options and mandatory security features, it reduces the chances of misconfigurations.
 
+### Cipher Suites
+
+For this project I will support the following tls 1.3 cipher suites, opting to be more secure rather than have wider compatibility.
+
+```golang
+TLS_AES_128_GCM_SHA256       uint16 = 0x1301
+TLS_AES_256_GCM_SHA384       uint16 = 0x1302
+TLS_CHACHA20_POLY1305_SHA256 uint16 = 0x1303
+```
+
+Trade offs here would be that some legacy systems or older network devices would not be compatible with these newer cipher suites, in a real world application this would have to be discussed to find a happy medium between security and compatibility.
+
 ## mTLS
 
 Authentication and Authorization will be done via mTLS. I will create a bash script to generate the following certificates and store them in the repository for this project. 
