@@ -51,7 +51,7 @@ The worker struct will have 4 methods:
 
     The worker will write the output of the job's process (stderr/stdout) on the server via a log file associated to the job by its ID (ex: 975b2d14-e567-4e22-92e4-eebefe6d8ed7.log). For streaming the logfile to the client the worker's logger will incorporate a filewatcher that will listen for file events on the specific job's logfile via inotifywait. As the logfile remains open and continues to be modified the logger will stream the incoming content to the client via a channel.
 
-### Tradeoff
+#### Trade-off
 For the interest of time each worker will store the logfile locally on the server. The log files will persist through the life of the server. This would not be ideal in a production instance. In a real world implemention I would store logging data in an s3 bucket or via a vendor logging solution such as Datadog.
 
 ### Job package
@@ -109,19 +109,20 @@ type Job struct {
 
 cgroups implementation will be added via a cgroup package that will be used to create the necessary directory structure in the server's filesystem. cgroups will be separated by jobID upon starting of the job and any child procs will be added by piping the pids the cgroups procs config. All resource limits will be hardcoded for this project.
 
-child_procs:
-```bash echo 2428 > /sys/fs/cgroup/{jobID}/cgroup.procs```
-memory:
-```bash /sys/fs/cgroup/{jobID}/memory.limit_in_bytes```
-cpu:  
-```bash 
-    /sys/fs/cgroup/{jobID}/cpu.shares
-    /sys/fs/cgroup/{jobID}/cpu.period
-    /sys/fs/cgroup/{jobID}/cpu.quota
-```
-disk_io:
-```bash /sys/fs/cgroup/{jobID}/blkio.weight```
+- child_procs:
+    ```bash echo 2428 > /sys/fs/cgroup/{jobID}/cgroup.procs```
+- memory:
+    ```bash /sys/fs/cgroup/{jobID}/memory.limit_in_bytes```
+- cpu:  
+    ```bash 
+        /sys/fs/cgroup/{jobID}/cpu.shares
+        /sys/fs/cgroup/{jobID}/cpu.period
+        /sys/fs/cgroup/{jobID}/cpu.quota
+    ```
+- disk_io:
+    ```bash /sys/fs/cgroup/{jobID}/blkio.weight```
 
+#### Trade-off 
 In a production environment the resource limits could be configurable during instanting the jobs but for this project I will hardcode limits to reduce scope.
 
 
@@ -131,7 +132,7 @@ The API will be a gRPC server that will be responsible for authentication, autho
 https://github.com/jaylane/job-scheduler/blob/acf2ea9742674d9d15b7dda6df87cc97975cb756/proto/worker.proto#L1-L68
 
 
-### CLI
+## CLI
 The CLI will utilize [cobra](https://github.com/spf13/cobra) for ease of development. The CLI will have a gRPC client that will be able to interact with the API to start/stop/get status/stream output of jobs in their local shell.
 
 
@@ -182,7 +183,8 @@ TLS_AES_256_GCM_SHA384       uint16 = 0x1302
 TLS_CHACHA20_POLY1305_SHA256 uint16 = 0x1303
 ```
 
-Trade offs here would be that some legacy systems or older network devices would not be compatible with these newer cipher suites, in a real world application this would have to be discussed to find a happy medium between security and compatibility.
+#### Trade-off 
+Some legacy systems or older network devices would not be compatible with these newer cipher suites, in a real world application this would have to be discussed to find a happy medium between security and compatibility.
 
 ## mTLS
 
@@ -230,7 +232,8 @@ The reasons I decided to switch to EdDSA:
 - Offers excellent security and performance, even on less powerful hardware.
 - Simplicity: Uses fixed-size keys (256 bits) and avoids the pitfalls of ECDSA’s curve parameters.
 
-The downside to EdDSA is that is does not have universal adoption, but like the tradeoff above with the cipher suites for this project I'm opting for performance and security over widespread compatibility.
+#### Trade-off 
+The downside to EdDSA is that is does not have universal adoption, but like the trade-off above with the cipher suites for this project I'm opting for performance and security over widespread compatibility.
 
 There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as X.509 v3 extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role. Following the example from the spinnaker [docs](https://spinnaker.io/docs/setup/other_config/security/authentication/x509/#creating-an-x509-client-certificate-with-user-role-information). The roles must be informed when the CA signs the CSR so the extension attribute roleOid 1.2.840.10070.8.1 = ASN1:UTF8String must be requested in the CSR when the client cert is created. The data following UTF8String: is encoded inside of the x509 cert under the given OID.
 
@@ -252,8 +255,6 @@ subjectAltName=DNS:localhost
   1.2.840.10070.8.1 = ASN1:UTF8String:user
 ```
 
-## Tradeoff 
+#### Trade-off 
 In a real world scenario these certificates could be managed by secrets or using something like Vault.
 
-## simple authorization scheme
-will utilize ASN1:UTF8String denoting authorization role on the certificate extension
