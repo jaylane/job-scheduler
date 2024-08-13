@@ -66,6 +66,6 @@ message StreamJobOutputRequest {
 
 message StreamJobOutputResponse {
     // The output of the job.
-    string output = 1;
+    bytes output = 1;
 }
 
