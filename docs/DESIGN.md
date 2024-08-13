@@ -219,10 +219,18 @@ type ClientConfig struct {
 
 ### Certificates
 * X.509
-* Signature Algorithm: EdDSA with ED25519 curve
-* Public Key Algorithm: EdDSA with ED25519 curve
+* Signature Algorithm: EdDSA with ED25519 scheme
+* Public Key Algorithm: EdDSA with ED25519 scheme
 * ED25519 Public-Key: (256 bit)
 * roleOid 1.2.840.10070.8.1 = ASN1:UTF8String 
+
+After doing some more research I decided to move away from RSA which was a kneejerk reaction because its what I've used in the past. 
+The reasons I decided to switch to EdDSA:
+
+- Offers excellent security and performance, even on less powerful hardware.
+- Simplicity: Uses fixed-size keys (256 bits) and avoids the pitfalls of ECDSA’s curve parameters.
+
+The downside to EdDSA is that is does not have universal adoption, but like the tradeoff above with the cipher suites for this project I'm opting for performance and security over widespread compatibility.
 
 There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as X.509 v3 extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role. Following the example from the spinnaker [docs](https://spinnaker.io/docs/setup/other_config/security/authentication/x509/#creating-an-x509-client-certificate-with-user-role-information). The roles must be informed when the CA signs the CSR so the extension attribute roleOid 1.2.840.10070.8.1 = ASN1:UTF8String must be requested in the CSR when the client cert is created. The data following UTF8String: is encoded inside of the x509 cert under the given OID.
 
