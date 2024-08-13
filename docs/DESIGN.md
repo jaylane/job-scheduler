@@ -107,7 +107,7 @@ type Job struct {
 
 ### cgroups package
 
-cgroups implementation will be added via a cgroup package that will be used to create the necessary directory structure in the server's filesystem. cgroups will be separated by jobID upon starting of the job and any child procs will be added by piping the pids the cgroups procs config. All resource limits will be hardcoded for this project.
+cgroups implementation will be added via a cgroup package that will be used to create the necessary directory structure in the server's filesystem. cgroups will be separated by jobID upon starting of the job and any child procs will be added by piping the pids the cgroups procs config. Resource limits for CPU, Memory, and BlockIO will be hardcoded for this project: 
 
 ```golang
 const (
@@ -135,7 +135,7 @@ const (
     ```
 
 #### Trade-off 
-In a production environment the resource limits could be configurable during instanting the jobs but for this project I will hardcode limits to reduce scope.
+In a production environment the resource limits could be configurable but for this project I will hardcode limits to reduce scope.
 
 
 ## API
@@ -155,8 +155,6 @@ jsched-cli start "/bin/ls" "-l"
 JobID: aeba5ba9-e95a-455b-b97b-31a2d98c45ab started
 
 jsched-cli stop "aeba5ba9-e95a-455b-b97b-31a2d98c45ab"
-
-JobID: aeba5ba9-e95a-455b-b97b-31a2d98c45ab stopped
 
 jsched-cli status aeba5ba9-e95a-455b-b97b-31a2d98c45ab
 
@@ -247,7 +245,9 @@ The reasons I decided to switch to EdDSA:
 #### Trade-off 
 The downside to EdDSA is that is does not have universal adoption, but like the trade-off above with the cipher suites for this project I'm opting for performance and security over widespread compatibility.
 
-There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as X.509 v3 extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role. Following the example from the spinnaker [docs](https://spinnaker.io/docs/setup/other_config/security/authentication/x509/#creating-an-x509-client-certificate-with-user-role-information). The roles must be informed when the CA signs the CSR so the extension attribute roleOid 1.2.840.10070.8.1 = ASN1:UTF8String must be requested in the CSR when the client cert is created. The data following UTF8String: is encoded inside of the x509 cert under the given OID.
+There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as X.509 v3 extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role. Following the example from the spinnaker [docs](https://spinnaker.io/docs/setup/other_config/security/authentication/x509/#creating-an-x509-client-certificate-with-user-role-information). The roles must be informed when the CA signs the CSR so the extension attribute roleOid 1.2.840.10070.8.1 = ASN1:UTF8String must be requested in the CSR when the client cert is created. The data following UTF8String: is encoded inside of the x509 cert under the given OID. 
+
+Usernames will be added to the X.509 certificates by using the Subject field under the CommonName RDN.
 
 admin role - authorized to interact with all rpcs
 
