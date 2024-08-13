@@ -162,11 +162,19 @@ jsched-cli stream aeba5ba9-e95a-455b-b97b-31a2d98c45ab
 
 ## Transport
 
-TLS 1.3 for transport of communication between client and server
+TLS 1.3 has been chosen for secure transport of communication between client and server for a few important reasons:
+
+- Improved Security: TLS 1.3 removes outdated cryptographic algorithms, making connections more secure against modern threats.
+
+- Performance Gains: The handshake process is simplified and faster (one round trip), reducing latency and improving performance, especially in high-traffic environments.
+
+- Forward Secrecy: TLS 1.3 enforces forward secrecy, ensuring that even if a key is compromised, past communications remain secure.
+
+- Simplified Configuration: With fewer options and mandatory security features, it reduces the chances of misconfigurations.
 
 ## mTLS
 
-Authentication and Authorization will be done via mTLS. I will generate the following certificates and store them in the repository for this project. 
+Authentication and Authorization will be done via mTLS. I will create a bash script to generate the following certificates and store them in the repository for this project. 
 
 * Client CA private key and signed cert
 * Server CA private key and signed cert
@@ -175,10 +183,34 @@ Authentication and Authorization will be done via mTLS. I will generate the foll
 * Server Signed Cert via CSR & CA noted above
 * Client Signed Cert via CSR & CA noted above
 
-signature: sha256WithRSAEncryption
-public key: rsa
-X.509 standard package
+The API Server will load its key and certificate as well as the client's CA via a configuration object in its main.go file (`/cmd/api/main.go`). 
 
+```golang
+type ServerConfig struct {
+	Address string
+	Certificate string
+	Key         string
+	ClientCA          string
+}
+```
+
+The client will follow the same pattern instead loading the server's CA in its main.go file. (`/cmd/client/main.go`).
+
+```golang
+type ClientConfig struct {
+	ServerAddress string
+	Certificate string
+	Key         string
+	ServerCA          string
+}
+```
+
+### Certificates
+* X.509
+* Signature Algorithm: EdDSA with ED25519 curve
+* Public Key Algorithm: EdDSA with ED25519 curve
+* ED25519 Public-Key: (256 bit)
+* roleOid 1.2.840.10070.8.1 = ASN1:UTF8String 
 
 There will be 2 roles as far as authorization is concerned admin & user. The client certificates will have these as X.509 v3 extensions. The API will use middleware to either authorize or reject the request based on the incoming certificate's role. Following the example from the spinnaker [docs](https://spinnaker.io/docs/setup/other_config/security/authentication/x509/#creating-an-x509-client-certificate-with-user-role-information). The roles must be informed when the CA signs the CSR so the extension attribute roleOid 1.2.840.10070.8.1 = ASN1:UTF8String must be requested in the CSR when the client cert is created. The data following UTF8String: is encoded inside of the x509 cert under the given OID.
 
