@@ -22,11 +22,13 @@ message StartJobRequest {
     repeated string args = 2;
 }
 
-message StartJobReponse {
+message StartJobResponse {
+    // The id of the job that was started.
     string id = 1;
 }
 
 message StopJobRequest {
+    // The id of the job to stop.
     string id = 1;
 }
 
@@ -39,11 +41,22 @@ message GetJobStatusRequest {
     string id = 1;
 }
 
+
+enum Status {
+    UNKNOWN = 0;
+    RUNNING = 1;
+    STOPPED = 2;
+    TERMINATED = 3;
+    COMPLETED = 4;
+}
+
 message GetJobStatusResponse {  
     // The process id of the job
     int32 pid = 1;
     // The exit code of the process
     int32 exit_code = 2;
+    // Status enum of the job.
+    Status status = 3;
 }
 
 message StreamJobOutputRequest {
@@ -53,5 +66,6 @@ message StreamJobOutputRequest {
 
 message StreamJobOutputResponse {
     // The output of the job.
-    string output = 1;
+    bytes output = 1;
 }
+
