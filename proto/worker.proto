@@ -33,12 +33,14 @@ message StopJobRequest {
 }
 
 message StopJobResponse {
+    string id = 1;
 }
 
 message GetJobStatusRequest {
     // The id of the job to get the status of.
     string id = 1;
 }
+
 
 enum Status {
     UNKNOWN = 0;
